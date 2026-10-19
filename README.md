@@ -9,7 +9,7 @@ Microservicio núcleo del proyecto **AndesStay** (caso DSY1107 – Desarrollo Cl
 - Al **confirmar** una reserva (`CREADA → CONFIRMADA`), llama a `catalog` para reservar atómicamente una unidad (`POST /api/catalog/units/{id}/reserve`); si no hay disponibilidad, la transacción se aborta y la reserva no cambia de estado.
 - Al hacer **checkout** o **cancelar** una reserva ya confirmada, libera la unidad en `catalog` (`POST /api/catalog/units/{id}/release`), best-effort.
 - Publica eventos de dominio a **Kafka** (`reservations.events`) para que `ms-andesstay-audit` y `ms-andesstay-report` los consuman de forma independiente.
-- Publica comandos a **RabbitMQ** (`cmd.direct` / `cmd.topic`) para que `ms-andesstay-notify` envíe el email/voucher/ticket de housekeeping correspondiente.
+- Publica comandos a **RabbitMQ** (`cmd.direct` / `cmd.topic`) para que `ms-andesstay-notify` envíe el email/voucher/ticket de housekeeping correspondiente. Los nombres de exchanges y routing keys están en `application.yml` (`andesstay.messaging`), y `ReservationCommandPublisher` es la única clase que publica (el servicio de negocio no conoce `RabbitTemplate`). Con *publisher confirms* y *returns* (`mandatory`), un comando que el broker rechaza o que no llega a ninguna cola queda registrado en el log.
 - Incluye una **pasarela de pago simulada** (sin integración real con ningún procesador): el huésped puede pagar de inmediato o al hacer check-in, y el pago genera un `transactionId` ficticio a modo de comprobante.
 
 ## Máquina de estados
@@ -63,4 +63,4 @@ Requiere Java 21 y la infraestructura de [andesstay-infra](https://github.com/Ma
 
 ## Repos relacionados
 
-[frontend-andesstay](https://github.com/MarCOCO999/frontend-andesstay) · [ms-andesstay-bff](https://github.com/MarCOCO999/ms-andesstay-bff) · [ms-andesstay-catalog](https://github.com/MarCOCO999/ms-andesstay-catalog) · [ms-andesstay-notify](https://github.com/MarCOCO999/ms-andesstay-notify) · [ms-andesstay-audit](https://github.com/MarCOCO999/ms-andesstay-audit) · [ms-andesstay-report](https://github.com/MarCOCO999/ms-andesstay-report) · [andesstay-infra](https://github.com/MarCOCO999/andesstay-infra)
+[frontend-andesstay](https://github.com/MarCOCO999/frontend-andesstay) · [ms-andesstay-bff](https://github.com/MarCOCO999/ms-andesstay-bff) · [ms-andesstay-catalog](https://github.com/MarCOCO999/ms-andesstay-catalog) · [ms-andesstay-notify](https://github.com/MarCOCO999/ms-andesstay-notify) · [ms-andesstay-audit](https://github.com/MarCOCO999/ms-andesstay-audit) · [ms-andesstay-report](https://github.com/MarCOCO999/ms-andesstay-report) · [ms-andesstay-rabbit-admin](https://github.com/MarCOCO999/ms-andesstay-rabbit-admin) · [andesstay-infra](https://github.com/MarCOCO999/andesstay-infra)

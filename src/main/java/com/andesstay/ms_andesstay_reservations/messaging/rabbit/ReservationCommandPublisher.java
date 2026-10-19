@@ -1,6 +1,6 @@
 package com.andesstay.ms_andesstay_reservations.messaging.rabbit;
 
-import com.andesstay.ms_andesstay_reservations.config.RabbitExchangesConfig;
+import com.andesstay.ms_andesstay_reservations.config.MessagingProperties;
 import com.andesstay.ms_andesstay_reservations.domain.Reservation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,9 +18,11 @@ public class ReservationCommandPublisher {
     private static final Logger log = LoggerFactory.getLogger(ReservationCommandPublisher.class);
 
     private final RabbitTemplate rabbitTemplate;
+    private final MessagingProperties properties;
 
-    public ReservationCommandPublisher(RabbitTemplate rabbitTemplate) {
+    public ReservationCommandPublisher(RabbitTemplate rabbitTemplate, MessagingProperties properties) {
         this.rabbitTemplate = rabbitTemplate;
+        this.properties = properties;
     }
 
     public void sendEmail(Reservation reservation, String template) {
@@ -35,7 +37,7 @@ public class ReservationCommandPublisher {
                 template,
                 Map.of("reservationId", reservation.getId().toString(), "estado", reservation.getStatus().name())
         );
-        rabbitTemplate.convertAndSend(RabbitExchangesConfig.EXCHANGE_CMD_DIRECT, RabbitExchangesConfig.ROUTING_EMAIL, command);
+        rabbitTemplate.convertAndSend(properties.exchanges().direct(), properties.routingKeys().email(), command);
         log.info("Comando email '{}' encolado para reserva {}", template, reservation.getId());
     }
 
@@ -50,7 +52,7 @@ public class ReservationCommandPublisher {
                 reservation.getUnitId(),
                 instructions
         );
-        rabbitTemplate.convertAndSend(RabbitExchangesConfig.EXCHANGE_CMD_DIRECT, RabbitExchangesConfig.ROUTING_HOUSEKEEPING, command);
+        rabbitTemplate.convertAndSend(properties.exchanges().direct(), properties.routingKeys().housekeeping(), command);
         log.info("Ticket de housekeeping encolado para unidad {} (reserva {})", reservation.getUnitId(), reservation.getId());
     }
 
@@ -64,7 +66,7 @@ public class ReservationCommandPublisher {
                 reservation.getId().toString(),
                 reservation.getGuestEmail()
         );
-        rabbitTemplate.convertAndSend(RabbitExchangesConfig.EXCHANGE_CMD_DIRECT, RabbitExchangesConfig.ROUTING_VOUCHER, command);
+        rabbitTemplate.convertAndSend(properties.exchanges().direct(), properties.routingKeys().voucher(), command);
         log.info("Comando de voucher encolado para reserva {}", reservation.getId());
     }
 }

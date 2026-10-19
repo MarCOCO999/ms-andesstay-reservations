@@ -15,20 +15,19 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitExchangesConfig {
 
-    public static final String EXCHANGE_CMD_DIRECT = "cmd.direct";
-    public static final String EXCHANGE_CMD_TOPIC = "cmd.topic";
+    private final MessagingProperties properties;
 
-    public static final String ROUTING_EMAIL = "email.send";
-    public static final String ROUTING_HOUSEKEEPING = "housekeeping.ticket";
-    public static final String ROUTING_VOUCHER = "voucher.gen";
+    public RabbitExchangesConfig(MessagingProperties properties) {
+        this.properties = properties;
+    }
 
     @Bean
     public DirectExchange cmdDirectExchange() {
-        return new DirectExchange(EXCHANGE_CMD_DIRECT, true, false);
+        return new DirectExchange(properties.exchanges().direct(), true, false);
     }
 
     @Bean
     public TopicExchange cmdTopicExchange() {
-        return new TopicExchange(EXCHANGE_CMD_TOPIC, true, false);
+        return new TopicExchange(properties.exchanges().topic(), true, false);
     }
 }
